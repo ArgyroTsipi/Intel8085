@@ -1,0 +1,10 @@
+START: IN 10H
+       MVI A,FFH
+       LXI H,0900H
+       MOV M,A
+STORE: DCR A     
+       INX H     
+       MOV M,A     
+       CPI 00H
+       JNZ STORE
+END

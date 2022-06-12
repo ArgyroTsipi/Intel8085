@@ -1,0 +1,51 @@
+START:	LXI B,00C8H ;used for 0.2 sec delay
+	MVI D,00H   ;D contains remaining time for light switch
+	MVI E,FFH   ;E is used to print output (lights)
+
+WAIT_FOR_ON:	CALL DELB
+		MOV A,D
+		ANI 03H ;keep only the last two digits
+		CPI 03H ;switches lights every 4 repeats (0.8s)
+		JNZ SKIP_LIGHT_SWITCH_1
+		MOV A,E ;previous light condition
+		CMA     ;switch
+		STA 3000H
+		MOV E,A
+SKIP_LIGHT_SWITCH_1:	MOV A,D
+			CPI 00H  ;if A = 00H then z=1, if A<00H CY=1
+			JZ TURN_OFF_1  ;turn lights off if A=D=0
+			DCR D  ;decrease D
+			JMP SKIP_TURN_OFF_1
+TURN_OFF_1:	MVI A,FFH
+		STA 3000H
+		MVI E,FFH
+SKIP_TURN_OFF_1:	LDA 2000H
+			ANI 01H
+			CPI 01H  ;if A = 01H then z=1, if A<01H CY=1
+			JNZ WAIT_FOR_ON  ;if Z = 0 go to WAIT FOR ON
+
+WAIT_FOR_OFF:		CALL DELB
+			MOV A,D
+			ANI 03H  ;keep only the last two digits
+			CPI 03H  ;switches lights every 4 repeats (0.8s)
+			JNZ SKIP_LIGHT_SWITCH_2
+			MOV A,E  ;previous light condition
+			CMA      ;switch
+			STA 3000H
+			MOV E,A
+SKIP_LIGHT_SWITCH_2:	MOV A,D
+			CPI 00H  ;if A = 00H then z=1, if A<00H CY=1
+			JZ TURN_OFF_2  ;turn lights off if A=D=0
+			DCR D  ;decrease D
+			JMP SKIP_TURN_OFF_2
+TURN_OFF_2:	MVI A,FFH
+		STA 3000H
+		MVI E,FFH
+SKIP_TURN_OFF_2:	LDA 2000H
+			ANI 01H
+			CPI 01H
+			JZ WAIT_FOR_OFF  ;if ? = 1 go to WAIT FOR OFF
+			MVI D,4BH  ;D now contains 75 (75*0.2s = 15s)
+			JMP WAIT_FOR_ON
+
+END
